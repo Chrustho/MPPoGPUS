@@ -12,6 +12,7 @@
 #define COEFF_B 0.1242
 
 
+
 __global__ void colorToGrey( unsigned char* Pin, unsigned char* Pout, int width, int height){
     int Col = blockIdx.x * blockDim.x + threadIdx.x;
     int Row = blockIdx.y * blockDim.y + threadIdx.y;
