@@ -7,9 +7,9 @@
 #include "stb_image_write.h"
 
 #define CHANNELS 3
-#define COEFF_R 0.8723
-#define COEFF_G 0.1111
-#define COEFF_B 0.1242
+#define COEFF_R 0.5
+#define COEFF_G 0.5
+#define COEFF_B 0.5
 
 __global__ void colorToGrey(unsigned char *Pin, unsigned char *Pout, int width, int height)
 {
@@ -36,7 +36,7 @@ int main()
     unsigned char *data = stbi_load("maialino.png", &width, &height, &channels, 0);
     if (!data)
     {
-        fprintf(stderr, "sfallimento nel caricamento\n");
+        fprintf(stderr, "Fallimento nel caricamento\n");
         return 1;
     }
     printf("Image: %d x %d \n channels=%d\n", width, height, channels);
