@@ -33,7 +33,7 @@ __global__ void colorToGrey(unsigned char *Pin, unsigned char *Pout, int width, 
 int main()
 {
     int width, height, channels;
-    unsigned char *data = stbi_load("maialino.png", &width, &height, &channels, 0);
+    unsigned char *data = stbi_load("porky.png", &width, &height, &channels, 0);
     if (!data)
     {
         fprintf(stderr, "Fallimento nel caricamento\n");
@@ -62,7 +62,7 @@ int main()
 
     char filename[256];
     snprintf(filename, sizeof(filename),
-             "imm_grigia_%.2f_%.2f_%.2f.png",
+             "porky_grigia_%.2f_%.2f_%.2f.png",
              (double)COEFF_R, (double)COEFF_G, (double)COEFF_B);
 
     if (!stbi_write_png(filename, width, height, 1, out, width))
