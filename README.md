@@ -1,7 +1,7 @@
 # MPPoGPUS
 Scripts e implementazioni per il corso/esercitazioni **Massively Parallel Programming on GPUs**
 
-**Repository:** `Chrustho/MPPoGPUS`. :contentReference[oaicite:1]{index=1}
+**Repository:** `Chrustho/MPPoGPUS`
 
 ---
 
