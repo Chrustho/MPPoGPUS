@@ -29,6 +29,5 @@ Le cartelle principali includono esempi didattici (es. somma vettoriale), esperi
 - NVIDIA CUDA Toolkit (es. 11.x o successivo — adattare alla versione usata)
 - `nvcc` (compilatore CUDA)
 - `g++` / toolchain C/C++
-- (opzionale) OpenCV per gli esempi che manipolano immagini (se gli esempi la richiedono)
 - Linux / WSL o altra piattaforma con driver NVIDIA aggiornati
 
