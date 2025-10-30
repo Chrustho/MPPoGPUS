@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# run_and_clean.sh (versione robusta)
-# Uso:
-# ./run_and_clean.sh        -> esegue tutto e chiede conferma prima di cancellare
-# ./run_and_clean.sh --yes  -> esegue tutto e cancella senza chiedere
 
 FORCE=0
 if [[ "${1:-}" == "--yes" ]]; then
@@ -178,6 +174,7 @@ fi
 echo
 echo "=== Pulizia: elenco file che verrebbero cancellati (dry-run)"
 
+# Lista file da cancellare (escludo sorgenti e script, ma INCLUDO i binari)
 find . -type f ! \( \
     -iname '*.cu' -o \
     -iname '*.py' -o \
@@ -185,13 +182,12 @@ find . -type f ! \( \
     -iname '*.sh' -o \
     -iname '*.png' -o \
     -iname 'makefile' -o \
-    -iname 'makefile.*' -o \
-    -perm /111 \
+    -iname 'makefile.*' \
   \) -print | sed 's|^\./||' || true
 
 if [[ $FORCE -eq 1 ]]; then
   echo
-  echo "FORZANDO la cancellazione dei file elencati..."
+  echo "FORZANDO la cancellazione dei file elencati (inclusi binari basic_matmul e tiled_matmul)..."
   find . -type f ! \( \
       -iname '*.cu' -o \
       -iname '*.py' -o \
@@ -199,13 +195,12 @@ if [[ $FORCE -eq 1 ]]; then
       -iname '*.sh' -o \
       -iname '*.png' -o \
       -iname 'makefile' -o \
-      -iname 'makefile.*' -o \
-      -perm /111 \
+      -iname 'makefile.*' \
     \) -print -exec rm -v -- {} +
   echo "Cancellazione completata."
 else
   echo
-  read -r -p "Vuoi cancellare tutti i file elencati sopra (tutti i file tranne .cu, Makefile, .py, .gnuplot, .sh, .png e i binari)? [y/N] " ans
+  read -r -p "Vuoi cancellare tutti i file elencati sopra (inclusi i binari compilati)? [y/N] " ans
   if [[ "$ans" =~ ^[Yy]$ ]]; then
     echo "Cancellazione in corso..."
     find . -type f ! \( \
@@ -215,8 +210,7 @@ else
         -iname '*.sh' -o \
         -iname '*.png' -o \
         -iname 'makefile' -o \
-        -iname 'makefile.*' -o \
-        -perm /111 \
+        -iname 'makefile.*' \
       \) -print -exec rm -v -- {} +
     echo "Cancellazione completata."
   else
