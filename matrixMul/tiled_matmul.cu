@@ -175,7 +175,6 @@ int main(int argc, char **argv)
 
     double totalFlops = 2.0 * (double)ROWS_A * (double)COLS_B * (double)COLS_A;
 
-    /* array per memorizzare i gflops misurati per ogni block-size */
     double gflops_arr[3] = {0.0, 0.0, 0.0};
 
     int i;
@@ -185,7 +184,6 @@ int main(int argc, char **argv)
         dim3 block(blk, blk);
         dim3 grid((COLS_C + block.x - 1) / block.x, (ROWS_C + block.y - 1) / block.y);
 
-        /* re-inizializza C su GPU a zero prima di ogni misura */
         matrixInit<<<256, 256>>>(d_A, ROWS_A, COLS_A, d_B, ROWS_B, COLS_B, d_C, ROWS_C, COLS_C, VAL_A, VAL_B, 0.0f);
         CUDA_CHECK(cudaGetLastError());
         CUDA_CHECK(cudaDeviceSynchronize());
@@ -223,7 +221,6 @@ int main(int argc, char **argv)
 
     fclose(fout);
 
-    /* scrivo file roofline con intensity teorica e GFLOPS misurati */
     FILE *fr = fopen("tiled_roofline.dat", "w");
     if (fr)
     {

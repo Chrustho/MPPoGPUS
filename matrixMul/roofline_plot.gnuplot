@@ -1,28 +1,26 @@
-# ===================================================================
-# Roofline Model Plot - NVIDIA GTX 980
-# ===================================================================
+
 
 set terminal pngcairo size 1200,800 enhanced font "Arial,11"
 set output "roofline.png"
 
-# Titoli e assi
 set title "Roofline Model - Matrix Multiplication on GTX 980" font "Arial,16 bold"
 set xlabel "Operational Intensity (FLOP/byte)" font "Arial,13"
 set ylabel "Performance (GFLOP/s)" font "Arial,13"
 
-# Device peaks per GTX 980
+
 peak_flops = 4980.736   # GFLOPS (single-precision theoretical peak)
 peak_bw = 224.3         # GB/s (memory bandwidth theoretical)
 
-# Scala logaritmica su entrambi gli assi
+
 set logscale xy
 set grid xtics ytics mxtics mytics lw 0.5 lc rgb "#cccccc"
 
-# Range - ESTESO per includere i punti reali
+
 set xrange [0.05:200]
 set yrange [5:peak_flops*1.5]
 
-# Legenda posizionata in alto a sinistra con info sul migliore
+max_gflops = 12.984032
+
 set key top left
 set key box
 set key spacing 1.2
@@ -30,45 +28,36 @@ set key font "Arial,10"
 set key opaque
 set key title sprintf("Best: %.1f GFLOPS", max_gflops) font "Arial,10 bold"
 
-# Calcola ridge point
+
 ridge_point = peak_flops / peak_bw
 
-# Definizione curve roofline
+
 mem_bound(x) = peak_bw * x
 comp_bound(x) = peak_flops
 
-# Definisco il massimo manualmente (Tiled_16 dal file)
-# Workaround: stats non funziona sempre con alcuni formati di file
+
 max_gflops = 12.984032
 
-# Stili per le linee roofline
 set style line 1 lc rgb '#E63946' lw 3 dt 1        # Rosso - Memory bound
 set style line 2 lc rgb '#457B9D' lw 3 dt 2        # Blu - Compute bound
 
-# Stili per i punti BASIC (cerchi pieni, tonalità calde)
 set style line 10 lc rgb '#FF6B35' pt 7 ps 2.5 lw 2
 set style line 11 lc rgb '#F7931E' pt 7 ps 2.5 lw 2
 set style line 12 lc rgb '#FFA500' pt 7 ps 2.5 lw 2
 
-# Stili per i punti TILED (triangoli, tonalità fredde)
 set style line 20 lc rgb '#004E89' pt 9 ps 2.5 lw 2
 set style line 21 lc rgb '#1A659E' pt 9 ps 2.5 lw 2
 set style line 22 lc rgb '#4ECDC4' pt 9 ps 2.5 lw 2
 
-# Stile per il punto migliore (diamante pieno grande e dorato)
 set style line 99 lc rgb '#FFD700' pt 18 ps 5.0 lw 3
 
-# Annotazione ridge point
 set arrow from ridge_point,10 to ridge_point,peak_flops*1.5 nohead lw 1.5 dt 3 lc rgb "#888888"
 set label sprintf("Ridge Point\n%.2f FLOP/byte", ridge_point) at ridge_point*1.5,30 center font "Arial,9" textcolor rgb "#555555"
 
-# DEBUG: Stampa contenuto file per capire il formato
 print "=== Dati rilevati ==="
 print "Operational Intensity: ~146.29 FLOP/byte"
 print "Performance range: 8.8 - 13.0 GFLOPS"
 
-# PLOT: Aggiungo jitter artificiale per separare visivamente i punti
-# Dato che hanno tutti la stessa x=146.29, aggiungo piccoli offset
 
 plot \
     mem_bound(x) with lines ls 1 title sprintf("Memory Bound (%.0f GB/s)", peak_bw), \
@@ -83,4 +72,4 @@ plot \
 print ""
 print "=== Roofline plot generated: roofline.png ==="
 print sprintf("Ridge point: %.2f FLOP/byte", ridge_point)
-print sprintf("Best performance: %f GFLOPS", max_gflops)
+print sprintf("Best performance: %.2f GFLOPS", max_gflops)

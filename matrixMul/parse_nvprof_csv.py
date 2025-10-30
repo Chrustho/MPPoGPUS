@@ -64,7 +64,6 @@ for k, i in col_index.items():
 if idx_flop is None:
     idx_flop = trova_col(['flop', 'flop_count'])
 
-# dram read/write
 idx_dram_r = None
 idx_dram_w = None
 for k, i in col_index.items():
@@ -72,7 +71,6 @@ for k, i in col_index.items():
         idx_dram_r = i
     if 'dram_write' in k or 'dram write' in k or 'dram_write_bytes' in k:
         idx_dram_w = i
-# fallback su parole 'read' e 'write' con 'dram' nel nome
 if idx_dram_r is None:
     idx_dram_r = trova_col(['dram', 'read'])
 if idx_dram_w is None:
@@ -98,7 +96,6 @@ dati = []
 for r in righe[header_idx + 1:]:
     if len(r) <= 1:
         continue
-    # nome kernel
     try:
         nome = r[idx_name].strip()
     except Exception:
