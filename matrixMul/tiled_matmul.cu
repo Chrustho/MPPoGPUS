@@ -7,15 +7,15 @@
 
 #define MAX_TILE 32
 
-#define ROWS_A (1 << 11) /* 2048 */
-#define COLS_A (1 << 10) /* 1024 */
-#define ROWS_B (1 << 10) /* 1024 */
-#define COLS_B (1 << 9)  /* 512 */
+#define ROWS_A (1 << 11) 
+#define COLS_A (1 << 10) 
+#define ROWS_B (1 << 10) 
+#define COLS_B (1 << 9)  
 
 #define ROWS_C ROWS_A
 #define COLS_C COLS_B
 
-const float VAL_A = 0.5f * (1.0f / 1024.0f); /* 0.5 * 2^-10 */
+const float VAL_A = 0.5f * (1.0f / 1024.0f); 
 const float VAL_B = 2.0f;
 const float VAL_C = 0.0f;
 const float EXPECTED_C = 1.0f;
@@ -84,18 +84,10 @@ __global__ void MatrixMulTiled(float *d_P, float *d_M, float *d_N, int j, int k,
         {
             Mds[tr][tc] = d_M[(size_t)Row * k + colIdxM];
         }
-        else
-        {
-            Mds[tr][tc] = 0.0f;
-        }
 
         if ((rowIdxN < k) && (Col < l))
         {
             Nds[tr][tc] = d_N[(size_t)rowIdxN * l + Col];
-        }
-        else
-        {
-            Nds[tr][tc] = 0.0f;
         }
 
         __syncthreads();
@@ -143,14 +135,12 @@ int main(int argc, char **argv)
     size_t sizeC = (size_t)ROWS_C * COLS_C * sizeof(float);
 
     float *d_A = NULL, *d_B = NULL, *d_C = NULL;
-    CUDA_CHECK(cudaMalloc((void **)&d_A, sizeA));
-    CUDA_CHECK(cudaMalloc((void **)&d_B, sizeB));
-    CUDA_CHECK(cudaMalloc((void **)&d_C, sizeC));
+    cudaMalloc((void **)&d_A, sizeA);
+    cudaMalloc((void **)&d_B, sizeB);
+    cudaMalloc((void **)&d_C, sizeC);
 
-    int threadsInit = 256;
+    int threadsInit = 1024;
     int blocksInit = (int)(((sizeA / sizeof(float)) + threadsInit - 1) / threadsInit);
-    if (blocksInit < 128)
-        blocksInit = 128;
 
     matrixInit<<<blocksInit, threadsInit>>>(d_A, ROWS_A, COLS_A, d_B, ROWS_B, COLS_B, d_C, ROWS_C, COLS_C, VAL_A, VAL_B, VAL_C);
     CUDA_CHECK(cudaGetLastError());
@@ -161,19 +151,19 @@ int main(int argc, char **argv)
     float *h_C = (float *)malloc(sizeC);
     if (!h_C)
     {
-        fprintf(stderr, "Host malloc failed\n");
+        fprintf(stderr, "Malloc lato host fallita\n");
         return 1;
     }
 
     FILE *fout = fopen("tiled_timings.csv", "w");
     if (!fout)
     {
-        fprintf(stderr, "Cannot open tiled_timings.csv for writing\n");
+        fprintf(stderr, "Impossibile aprire il file in scrittura\n");
         return 1;
     }
     fprintf(fout, "kernel,block,ms,gflops,correct\n");
 
-    double totalFlops = 2.0 * (double)ROWS_A * (double)COLS_B * (double)COLS_A;
+    double totalFlops = (double)ROWS_A * (double)COLS_B * (2.0*(double)COLS_A-1);
 
     double gflops_arr[3] = {0.0, 0.0, 0.0};
 
@@ -184,7 +174,7 @@ int main(int argc, char **argv)
         dim3 block(blk, blk);
         dim3 grid((COLS_C + block.x - 1) / block.x, (ROWS_C + block.y - 1) / block.y);
 
-        matrixInit<<<256, 256>>>(d_A, ROWS_A, COLS_A, d_B, ROWS_B, COLS_B, d_C, ROWS_C, COLS_C, VAL_A, VAL_B, 0.0f);
+        matrixInit<<<blocksInit, threadsInit>>>(d_A, ROWS_A, COLS_A, d_B, ROWS_B, COLS_B, d_C, ROWS_C, COLS_C, VAL_A, VAL_B, 0.0f);
         CUDA_CHECK(cudaGetLastError());
         CUDA_CHECK(cudaDeviceSynchronize());
 
@@ -203,7 +193,7 @@ int main(int argc, char **argv)
         CUDA_CHECK(cudaEventElapsedTime(&ms, start, stop));
 
         double gflops = 0.0;
-        if (ms > 0.0f) /* protezione divisione per zero */
+        if (ms > 0.0f) 
         {
             gflops = (totalFlops / (ms / 1000.0)) / 1e9;
         }
@@ -226,10 +216,10 @@ int main(int argc, char **argv)
     {
         double minimalBytes = ((double)ROWS_A * COLS_A + (double)COLS_A * COLS_B + (double)ROWS_A * COLS_B) * sizeof(float);
         double intensity = totalFlops / minimalBytes;
-        fprintf(fr, "#kernel intensity gflops\n");
+        fprintf(fr, "#kernel gflops\n");
         for (i = 0; i < 3; ++i)
         {
-            fprintf(fr, "Tiled_%d %.6f %.6f\n", blockSizes[i], intensity, gflops_arr[i]);
+            fprintf(fr, "Tiled_%d %.6f\n", blockSizes[i], gflops_arr[i]);
         }
         fclose(fr);
     }
