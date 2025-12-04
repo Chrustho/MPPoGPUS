@@ -10,8 +10,8 @@
 #define STB_IMAGE_WRITE_STATIC
 #include "stb_image_write.h"
 
-#define BLUR_SIZE 2
-#define PASS 1
+#define BLUR_SIZE 6
+#define PASS 100
 
 __global__ void blurKernel(unsigned char *out, unsigned char *in, int w, int h)
 {
@@ -53,7 +53,7 @@ static void checkCuda(cudaError_t err, const char *msg)
 
 int main(int argc, char **argv)
 {
-    const char *inFilename = (argc > 1) ? argv[1] : "michele.png";
+    const char *inFilename = (argc > 1) ? argv[1] : "maialino_triste.png";
     const char *fname = inFilename;
     const char *s1 = strrchr(inFilename, '/');
     const char *s2 = strrchr(inFilename, '\\');
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 
     char nome[512];
     snprintf(nome, sizeof(nome),
-             "blur_%s_d&d_NP:%d_DM:%d.png",
+             "blur_%s_mail_NP:%d_DM:%d.png",
              base, PASS, BLUR_SIZE);
 
     const char *outFilename = (argc > 2) ? argv[2] : nome;
@@ -105,16 +105,29 @@ int main(int argc, char **argv)
     dim3 block(16, 16);
     dim3 grid((w + block.x - 1) / block.x, (h + block.y - 1) / block.y);
 
+    cudaEvent_t start, stop;
+    checkCuda(cudaEventCreate(&start),"");
+    checkCuda(cudaEventCreate(&stop),"");
+    checkCuda(cudaEventRecord(start, 0),"");
+
+
     for (int i = 0; i < PASS; ++i)
     {
         blurKernel<<<grid, block>>>(d_out, d_in, w, h);
         checkCuda(cudaGetLastError(), "lancio kernel");
+
+
         checkCuda(cudaDeviceSynchronize(), "cudaDeviceSynchronize");
         unsigned char *tmp = d_in;
         d_in = d_out;
         d_out = tmp;
-        printf("Passaggio blur numero: %d\n", i + 1);
     }
+    checkCuda(cudaEventRecord(stop, 0),"");
+    checkCuda(cudaEventSynchronize(stop),"");
+
+    float ms = 0.0f;
+    checkCuda(cudaEventElapsedTime(&ms, start, stop),"");
+    printf("Elapsed time %f\n",ms);
 
     checkCuda(cudaMemcpy(h_out, d_in, imgSize, cudaMemcpyDeviceToHost), "cudaMemcpy h_out d_in");
 
