@@ -158,12 +158,6 @@ cuda-memcheck ./output_debug
 
 ---
 
-## 📄 Licenza
-
-Questo progetto è rilasciato sotto licenza MIT. Vedi il file [LICENSE](LICENSE) per i dettagli.
-
----
-
 ## 👤 Autore
 
 **Chrustho** - [GitHub](https://github.com/Chrustho)
